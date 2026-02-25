@@ -30,60 +30,38 @@ export function setupGUI(parentContext) {
   parentContext.params.policyLabel = parentContext.params.policyLabel || 'Ours';
   const policyMap = {
     Balance: {
-      "Ours": {
+      "Learned Outwards r ~ U(0.5, 1.5)": {
+        yaml: "./examples/checkpoints/g1/balance/deploy_baseline_train.yaml",
+        onnx: "./examples/checkpoints/g1/balance/policy_learned_outward_0.5_1.5.onnx",
+      },
+      "Baseline: Interval Push (1-1.5s)": {
+        yaml: "./examples/checkpoints/g1/balance/deploy_baseline_train.yaml",
+        onnx: "./examples/checkpoints/g1/balance/policy_baseline_train_interval_1_1.5.onnx",
+      },
+      "Baseline: Interval Push (3-3.5s)": {
+        yaml: "./examples/checkpoints/g1/balance/deploy_baseline_train.yaml",
+        onnx: "./examples/checkpoints/g1/balance/policy_baseline_train_interval_3_3.5.onnx",
+      },
+      "Baseline: Train on D0": {
+        yaml: "./examples/checkpoints/g1/balance/deploy_baseline_train.yaml",
+        onnx: "./examples/checkpoints/g1/balance/policy_baseline_train_on_d0.onnx",
+      },
+      "Baseline: Train on D1": {
+        yaml: "./examples/checkpoints/g1/balance/deploy_baseline_train.yaml",
+        onnx: "./examples/checkpoints/g1/balance/policy_baseline_train_on_d1.onnx",
+      },
+      "Baseline: Train on D2": {
+        yaml: "./examples/checkpoints/g1/balance/deploy_baseline_train.yaml",
+        onnx: "./examples/checkpoints/g1/balance/policy_baseline_train_on_d2.onnx",
+      },
+      "Baseline: Train on D3": {
+        yaml: "./examples/checkpoints/g1/balance/deploy_baseline_train.yaml",
+        onnx: "./examples/checkpoints/g1/balance/policy_baseline_train_on_d3.onnx",
+      },
+      "State Projection Advantage Regularization": {
         yaml: "./examples/checkpoints/g1/balance/balance_deploy_state_projection.yaml",
         onnx: "./examples/checkpoints/g1/balance/balance_policy_state_projection.onnx",
       },
-      "Baseline": {
-        yaml: "./examples/checkpoints/g1/balance/balance_deploy_baseline.yaml",
-        onnx: "./examples/checkpoints/g1/balance/balance_policy_baseline.onnx",
-      }
-    },
-    Velocity: {
-      "Ours": {
-        yaml: "./examples/checkpoints/g1/velocity/velocity_deploy_ours.yaml",
-        onnx: "./examples/checkpoints/g1/velocity/velocity_policy_ours.onnx",
-      },
-      "Baseline": {
-        yaml: "./examples/checkpoints/g1/velocity/velocity_deploy_baseline.yaml",
-        onnx: "./examples/checkpoints/g1/velocity/velocity_policy_baseline.onnx",
-      }
-    },
-    Squat: {
-      "Ours": {
-        yaml: "./examples/checkpoints/g1/squat/squat_deploy_state_projection.yaml",
-        onnx: "./examples/checkpoints/g1/squat/squat_policy_state_projection.onnx",
-        motion: "./examples/checkpoints/g1/squat/squat_29dof.csv",
-      },
-      "Baseline": {
-        yaml: "./examples/checkpoints/g1/squat/squat_deploy_baseline.yaml",
-        onnx: "./examples/checkpoints/g1/squat/squat_policy_baseline.onnx",
-        motion: "./examples/checkpoints/g1/squat/squat_29dof.csv",
-      }
-    },
-    Single_Leg: {
-      "Ours": {
-        yaml: "./examples/checkpoints/g1/single_leg_2/single_leg_2_deploy_state_projection.yaml",
-        onnx: "./examples/checkpoints/g1/single_leg_2/single_leg_2_policy_state_projection.onnx",
-        motion: "./examples/checkpoints/g1/single_leg_2/nezha_29dof.csv",
-      },
-      "Baseline": {
-        yaml: "./examples/checkpoints/g1/single_leg_2/single_leg_2_deploy_baseline.yaml",
-        onnx: "./examples/checkpoints/g1/single_leg_2/single_leg_2_policy_baseline.onnx",
-        motion: "./examples/checkpoints/g1/single_leg_2/nezha_29dof.csv",
-      }
-    },
-    Swallow_Balance: {
-      "Ours": {
-        yaml: "./examples/checkpoints/g1/swallow_balance/swallow_balance_deploy_state_projection.yaml",
-        onnx: "./examples/checkpoints/g1/swallow_balance/swallow_balance_policy_state_projection.onnx",
-        motion: "./examples/checkpoints/g1/swallow_balance/swallow_balance_29dof.csv",
-      },
-      "Baseline": {
-        yaml: "./examples/checkpoints/g1/swallow_balance/swallow_balance_deploy_baseline.yaml",
-        onnx: "./examples/checkpoints/g1/swallow_balance/swallow_balance_policy_baseline.onnx",
-        motion: "./examples/checkpoints/g1/swallow_balance/swallow_balance_29dof.csv",
-      }
     },
   };
 
@@ -198,11 +176,7 @@ export function setupGUI(parentContext) {
   }
 
   const taskController = parentContext.gui.add(parentContext.params, 'task', {
-    "Balance": "Balance",
-    "Velocity": "Velocity",
-    "Squat": "Squat",
-    "Single Leg": "Single_Leg",
-    "Swallow Balance": "Swallow_Balance"
+    "Static Balance": "Balance"
   }).name('Task');
 
   const ensurePolicyControllerPosition = () => {
