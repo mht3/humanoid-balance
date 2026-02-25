@@ -12,7 +12,8 @@ export default defineConfig({
   publicDir: false, // We'll manually handle static files
   
   build: {
-    outDir: '../humanoid/demo',
+    // Build directly into the top-level demo/ folder of humanoid-balance
+    outDir: '../demo',
     emptyOutDir: true,
     rollupOptions: {
       input: {
@@ -70,7 +71,8 @@ export default defineConfig({
         });
       },
       closeBundle() {
-        const outDir = join(__dirname, '..', 'humanoid', 'demo');
+        // Match the build.outDir above (../demo from the mujoco_wasm folder)
+        const outDir = join(__dirname, '..', 'demo');
         
         // Copy MuJoCo WASM files
         const distDir = join(__dirname, 'node_modules', 'mujoco-js', 'dist');

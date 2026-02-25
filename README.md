@@ -2,6 +2,16 @@
 
 This is the repository that contains source code for the [Humanoid Balance website](https://mht3.github.io/humanoid-balance).
 
+## MuJoCo Web Demo
+
+To build the interactive MuJoCo demo that lives at `/demo/`:
+
+1. `cd mujoco_wasm`
+2. `npm install`
+3. `npm run build`
+
+This will bundle the web demo and output it into the top-level `demo/` directory so it can be served by GitHub Pages.
+
 
 
 
