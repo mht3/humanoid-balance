@@ -8,19 +8,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Humanoid Balance</title>
 
-  <!-- Global site tag (gtag.js) - Google Analytics -->
-  <!-- <script async src="https://www.googletagmanager.com/gtag/js?id=G-PYVRSFMDRL"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
 
-    function gtag() {
-      dataLayer.push(arguments);
-    }
-
-    gtag('js', new Date());
-
-    gtag('config', 'G-PYVRSFMDRL');
-  </script> -->
 
   <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro"
         rel="stylesheet">
@@ -185,13 +173,20 @@
             Click the image below to load and interact with the MuJoCo humanoid balance simulation.
           </p>
         </div>
-        <div id="mujoco-container" style="width: 100%; height: 600px; border: 1px solid #ddd; margin-top: 20px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+        <div id="mujoco-container" style="border: 1px solid #ddd; margin: 20px auto 0; display: inline-block; overflow: hidden; position: relative; max-width: 100%;">
           <img
             id="mujoco-teaser"
             src="./static/images/demo_teaser.png"
             alt="Humanoid balance MuJoCo demo teaser"
-            style="max-width: 100%; max-height: 100%; cursor: pointer; object-fit: contain;"
+            style="width: 100%; height: auto; cursor: pointer; display: block;"
           />
+          <button
+            id="mujoco-open-btn"
+            class="button is-primary is-medium"
+            style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: auto;"
+          >
+            Open Demo
+          </button>
         </div>
       </div>
     </div>
@@ -202,13 +197,20 @@
   (function() {
     const container = document.getElementById('mujoco-container');
     const teaser = document.getElementById('mujoco-teaser');
+    const openBtn = document.getElementById('mujoco-open-btn');
 
-    if (container && teaser) {
-      const openDemo = () => {
+    if (container && (teaser || openBtn)) {
+      const openDemo = (event) => {
+        if (event) event.preventDefault();
         window.location.href = './demo/';
       };
 
-      teaser.addEventListener('click', openDemo);
+      if (teaser) {
+        teaser.addEventListener('click', openDemo);
+      }
+      if (openBtn) {
+        openBtn.addEventListener('click', openDemo);
+      }
     }
   })();
 </script>
@@ -225,7 +227,7 @@
           </p>
           <p>
             Thanks to <a
-              href="https://github.com/nerfies/nerfies.github.io">NERFIES</a> for the website template :).
+              href="https://github.com/nerfies/nerfies.github.io">NERFIES</a> for the website template :)
           </p>
         </div>
       </div>
