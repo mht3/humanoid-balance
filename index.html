@@ -182,13 +182,16 @@
         <h2 class="title is-3">MuJoCo Humanoid Simulation</h2>
         <div class="content has-text-justified">
           <p>
-            Click the button below to load and interact with the MuJoCo humanoid balance simulation.
+            Click the image below to load and interact with the MuJoCo humanoid balance simulation.
           </p>
         </div>
-        <div id="mujoco-container" style="width: 100%; height: 600px; border: 1px solid #ddd; margin-top: 20px;">
-          <button id="load-mujoco-btn" class="button is-large is-primary" style="margin-top: 250px;">
-            Load MuJoCo Simulation
-          </button>
+        <div id="mujoco-container" style="width: 100%; height: 600px; border: 1px solid #ddd; margin-top: 20px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+          <img
+            id="mujoco-teaser"
+            src="./static/images/demo_teaser.png"
+            alt="Humanoid balance MuJoCo demo teaser"
+            style="max-width: 100%; max-height: 100%; cursor: pointer; object-fit: contain;"
+          />
         </div>
       </div>
     </div>
@@ -196,10 +199,18 @@
 </section>
 
 <script>
-  document.getElementById('load-mujoco-btn').addEventListener('click', function() {
+  (function() {
     const container = document.getElementById('mujoco-container');
-    container.innerHTML = '<iframe src="./mujoco_wasm/index.html" style="width: 100%; height: 100%; border: none;"></iframe>';
-  });
+    const teaser = document.getElementById('mujoco-teaser');
+
+    if (container && teaser) {
+      const openDemo = () => {
+        container.innerHTML = '<iframe src="./mujoco_wasm/index.html" style="width: 100%; height: 100%; border: none;"></iframe>';
+      };
+
+      teaser.addEventListener('click', openDemo);
+    }
+  })();
 </script>
 
 <footer class="footer">
