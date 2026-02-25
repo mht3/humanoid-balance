@@ -163,7 +163,7 @@
             id="mujoco-teaser"
             src="./static/videos/demo_teaser.gif"
             alt="Humanoid balance demo teaser"
-            style="width: 100%; height: auto; cursor: pointer; display: block;"
+            style="width: 100%; height: auto; display: block;"
           />
           <button
             id="mujoco-open-btn"
@@ -190,9 +190,6 @@
         window.location.href = './demo/';
       };
 
-      if (teaser) {
-        teaser.addEventListener('click', openDemo);
-      }
       if (openBtn) {
         openBtn.addEventListener('click', openDemo);
       }
