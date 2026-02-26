@@ -30,6 +30,10 @@ export function setupGUI(parentContext) {
   parentContext.params.policyLabel = parentContext.params.policyLabel || 'Ours';
   const policyMap = {
     Balance: {
+      "Learned Outwards r ~ U(0.7, 2.5)": {
+        yaml: "./examples/checkpoints/g1/balance/deploy_baseline_train.yaml",
+        onnx: "./examples/checkpoints/g1/balance/policy_learned_outward_0.7_2.5.onnx",
+      },
       "Learned Outwards r ~ U(0.5, 1.5)": {
         yaml: "./examples/checkpoints/g1/balance/deploy_baseline_train.yaml",
         onnx: "./examples/checkpoints/g1/balance/policy_learned_outward_0.5_1.5.onnx",
