@@ -84,7 +84,9 @@ export class MuJoCoDemo {
       command_vel_z: 0.0,
       command_vel_yaw: 0.0,
       use_setpoint: false,
-      impulse_remain_time: 0.0
+      impulse_remain_time: 0.0,
+      // Duration remaining for D2 disturbance (seconds)
+      d2_remaining_time: 0.0,
     };
     this.mujoco_time = 0.0;
     this.simStepCount = 0;
@@ -117,6 +119,10 @@ export class MuJoCoDemo {
     this.replayMotionController = null;
     this.replayControls = null;
     this._updatingReplaySlider = false;
+
+    // Disturbance D2 storage
+    this.d2Force = new THREE.Vector3(0, 0, 0);
+    this.d2Torque = new THREE.Vector3(0, 0, 0);
 
     this.container = document.createElement( 'div' );
     document.body.appendChild( this.container );
@@ -338,8 +344,9 @@ export class MuJoCoDemo {
     this.adapt_hx.fill(0);
     this.rpy.set(0, 0, 0);
     
-    // Reset simulation counters
+    // Reset simulation counters and disturbances
     this.simStepCount = 0;
+    this.params.d2_remaining_time = 0.0;
     
     // Forward kinematics to update visualization
     mujoco.mj_forward(this.model, this.data);
@@ -387,6 +394,138 @@ export class MuJoCoDemo {
       console.warn('[ReplayMotion] no motion-enabled observations available to replay');
     }
     return replayed;
+  }
+
+  // --- Disturbance helpers ---------------------------------------------------
+
+  // Apply a random base push by directly modifying base linear velocity.
+  // vx_range, vy_range are [min, max] for linear velocity along x and y.
+  applyBasePush(vx_range, vy_range) {
+    if (this.pelvis_body_id === undefined) {
+      console.warn('[Disturbance] pelvis_body_id not set; cannot apply base push');
+      return;
+    }
+
+    // Find the root body for pelvis and its joint
+    const root = this.model.body_rootid[this.pelvis_body_id];
+    const jnt = this.model.body_jntadr[root];
+    if (jnt < 0) {
+      console.warn('[Disturbance] root body has no joint; cannot apply base push');
+      return;
+    }
+
+    const dof_adr = this.model.jnt_dofadr[jnt];
+    // Assume free joint: first 3 dofs are translational velocity
+    const vx = vx_range[0] + Math.random() * (vx_range[1] - vx_range[0]);
+    const vy = vy_range[0] + Math.random() * (vy_range[1] - vy_range[0]);
+
+    this.data.qvel[dof_adr + 0] += vx;
+    this.data.qvel[dof_adr + 1] += vy;
+  }
+
+  // Apply random upper-body joint offsets to qpos for "upper" joints:
+  // UPPER_JOINTS = [".*_shoulder_.*_joint", ".*_elbow_joint", ".*_wrist_.*"]
+  applyUpperBodyOffsets(pos_range) {
+    if (!this.joint_ids_map || !this.jointNamesIsaac || !this.jointNamesMJC) {
+      console.warn('[Disturbance] joint mappings not initialized; cannot apply upper-body offsets');
+      return;
+    }
+
+    const [lo, hi] = pos_range;
+    const patterns = [
+      /.*_shoulder_.*_joint/,
+      /.*_elbow_joint/,
+      /.*_wrist_.*/
+    ];
+
+    const qpos = this.data.qpos;
+
+    for (let i = 0; i < this.numActions; i++) {
+      const isaacIdx = this.joint_ids_map[i];
+      const name = this.jointNamesIsaac?.[isaacIdx];
+      if (!name) {
+        continue;
+      }
+
+      if (!patterns.some(re => re.test(name))) {
+        continue;
+      }
+
+      const mjcIdx = this.jointNamesMJC.indexOf(name);
+      if (mjcIdx < 0) {
+        continue;
+      }
+
+      const qpos_adr = this.model.jnt_qposadr[mjcIdx];
+      if (qpos_adr === undefined || qpos_adr < 0 || qpos_adr >= qpos.length) {
+        continue;
+      }
+
+      const offset = lo + Math.random() * (hi - lo);
+      qpos[qpos_adr] += offset;
+    }
+
+    // Update kinematics after position change
+    this.mujoco.mj_forward(this.model, this.data);
+  }
+
+  // Disturbance D0: base push only
+  applyDisturbanceD0() {
+    // Always start from a clean initial state
+    if (typeof this.resetSimulation === 'function') {
+      this.resetSimulation();
+    }
+    this.applyBasePush([-1.5, 1.5], [-1.5, 1.5]);
+  }
+
+  // Disturbance D1: base push + upper-body joint offsets
+  applyDisturbanceD1() {
+    if (typeof this.resetSimulation === 'function') {
+      this.resetSimulation();
+    }
+    this.applyBasePush([-1.5, 1.5], [-1.5, 1.5]);
+    this.applyUpperBodyOffsets([-1.0, 1.0]);
+  }
+
+  // Disturbance D2: forces and torques for 1–2 seconds
+  applyDisturbanceD2() {
+    if (typeof this.resetSimulation === 'function') {
+      this.resetSimulation();
+    }
+
+    if (this.pelvis_body_id === undefined) {
+      console.warn('[Disturbance] pelvis_body_id not set; cannot apply D2');
+      return;
+    }
+
+    // Duration T ~ U(1.0, 2.0)
+    const T = 1.0 + Math.random();
+    this.params.d2_remaining_time = T;
+
+    const sampleRange = (lo, hi) => lo + Math.random() * (hi - lo);
+
+    // force_range = (-50.0, 50.0), torque_range = (-7.5, 7.5)
+    this.d2Force.set(
+      sampleRange(-50.0, 50.0),
+      sampleRange(-50.0, 50.0),
+      sampleRange(-50.0, 50.0)
+    );
+    this.d2Torque.set(
+      sampleRange(-7.5, 7.5),
+      sampleRange(-7.5, 7.5),
+      sampleRange(-7.5, 7.5)
+    );
+
+    console.log('[Disturbance D2] duration', T, 'force', this.d2Force, 'torque', this.d2Torque);
+  }
+
+  // Disturbance D3: largest base push + upper-body joint offsets
+  applyDisturbanceD3() {
+    if (typeof this.resetSimulation === 'function') {
+      this.resetSimulation();
+    }
+    this.applyBasePush([-3.0, 3.0], [-3.0, 3.0]);
+    this.applyUpperBodyOffsets([-1.0, 1.0]);
   }
 
   async loadPolicy(policyPath, onnxOverride = null) {
@@ -771,7 +910,7 @@ export class MuJoCoDemo {
           }
         }
         
-        // Apply external impulses if requested
+        // Apply external impulses
         if (this.params["impulse_remain_time"] > 0 && this.pelvis_body_id !== undefined) {
           const force = new THREE.Vector3(0, 65, 0);
           const point = new THREE.Vector3(0, 0, 0);
@@ -786,6 +925,22 @@ export class MuJoCoDemo {
             this.data.qfrc_applied
           );
           this.params["impulse_remain_time"] -= timestep;
+        }
+
+        // Disturbance D2 – random external force/torque for 1–2 s
+        if (this.params.d2_remaining_time > 0 && this.pelvis_body_id !== undefined) {
+          const point = new THREE.Vector3(0, 0, 0);
+          getPosition(this.data.xpos, this.pelvis_body_id, point, false);
+          mujoco.mj_applyFT(
+            this.model,
+            this.data,
+            [this.d2Force.x, this.d2Force.y, this.d2Force.z],
+            [this.d2Torque.x, this.d2Torque.y, this.d2Torque.z],
+            [point.x, point.y, point.z],
+            this.pelvis_body_id,
+            this.data.qfrc_applied
+          );
+          this.params.d2_remaining_time -= timestep;
         }
         mujoco.mj_step(this.model, this.data);
         this.simStepCount++;

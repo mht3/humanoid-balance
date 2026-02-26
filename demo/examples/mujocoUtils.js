@@ -58,10 +58,10 @@ export function setupGUI(parentContext) {
         yaml: "./examples/checkpoints/g1/balance/deploy_baseline_train.yaml",
         onnx: "./examples/checkpoints/g1/balance/policy_baseline_train_on_d3.onnx",
       },
-      "State Projection Advantage Regularization": {
-        yaml: "./examples/checkpoints/g1/balance/balance_deploy_state_projection.yaml",
-        onnx: "./examples/checkpoints/g1/balance/balance_policy_state_projection.onnx",
-      },
+      // "State Projection Advantage Regularization": {
+      //   yaml: "./examples/checkpoints/g1/balance/balance_deploy_state_projection.yaml",
+      //   onnx: "./examples/checkpoints/g1/balance/balance_policy_state_projection.onnx",
+      // },
     },
   };
 
@@ -496,13 +496,39 @@ export function setupGUI(parentContext) {
   actionInnerHTML += 'Play / Pause<br>';
   keyInnerHTML += 'Space<br>';
 
-  const impulseSeconds = 0.45;
-  simulationFolder.add({ impulse: () => { parentContext.params["impulse_remain_time"] = impulseSeconds; } }, 'impulse').name('Impulse');
+  const impulseSeconds = 0.5;
+  simulationFolder.add(
+    { impulse: () => { parentContext.params["impulse_remain_time"] = impulseSeconds; } },
+    'impulse'
+  ).name('Fixed Impulse');
   document.addEventListener('keydown', (event) => {
-    if (event.code === 'KeyI') { parentContext.params["impulse_remain_time"] = impulseSeconds; event.preventDefault(); }
+    if (event.code === 'KeyI') {
+      parentContext.params["impulse_remain_time"] = impulseSeconds;
+      event.preventDefault();
+    }
   });
   actionInnerHTML += 'Impulse<br>';
   keyInnerHTML += 'I<br>';
+
+  // Disturbance scenario buttons D0–D3
+  simulationFolder.add(
+    { D0: () => { if (typeof parentContext.applyDisturbanceD0 === 'function') parentContext.applyDisturbanceD0(); } },
+    'D0'
+  ).name('Reset and Apply D0');
+  simulationFolder.add(
+    { D1: () => { if (typeof parentContext.applyDisturbanceD1 === 'function') parentContext.applyDisturbanceD1(); } },
+    'D1'
+  ).name('Reset and Apply D1');
+  simulationFolder.add(
+    { D2: () => { if (typeof parentContext.applyDisturbanceD2 === 'function') parentContext.applyDisturbanceD2(); } },
+    'D2'
+  ).name('Reset and Apply D2');
+  simulationFolder.add(
+    { D3: () => { if (typeof parentContext.applyDisturbanceD3 === 'function') parentContext.applyDisturbanceD3(); } },
+    'D3'
+  ).name('Reset and Apply D3');
+
+  actionInnerHTML += 'Disturbance D0 / D1 / D2 / D3<br>';
 
 
   // Add reset simulation button.
