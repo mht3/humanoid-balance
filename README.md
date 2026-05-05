@@ -1,6 +1,6 @@
-# Humanoid Balance
+# Visitation Critic
 
-This is the repository that contains source code for the [Humanoid Balance website](https://mht3.github.io/humanoid-balance).
+This is the repository that contains source code for the [Visitation Critic website](https://mht3.github.io/visitation-critic).
 
 ## MuJoCo Web Demo
 
